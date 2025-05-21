@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId'
       });
       Kamar.belongsTo(models.Kos, {
-        foreignKey: 'kosId'
+        foreignKey: 'kosanId'
       });
     }
   }

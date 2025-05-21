@@ -1,4 +1,5 @@
-const { Kos } = require('../models');
+const { Kos, ImageKosan, KosanFacility, Facility } = require('../models');
+const kosanfacility = require('../models/kosanfacility');
 
 class KosControllers {
 
@@ -99,13 +100,21 @@ class KosControllers {
 
     static async addKos(req, res, next) {
         try {
-            const { name, price, stockKamar, latitude, longitude, address } = req.body || {};
+            const { name, price, stockKamar, latitude, longitude, address, images, facility } = req.body || {};
             if (!name || !price || !stockKamar || !latitude || !longitude || !address) {
                 throw {
                     status: 400,
                     message: 'All fields are required'
                 };
             }
+
+            if (facility && !Array.isArray(facility)) {
+                throw {
+                    status: 400,
+                    message: 'Facility must be an array'
+                };
+            }
+
             const existingKos = await Kos.findOne({ where: { name } });
             if (existingKos) {
                 throw {
@@ -114,9 +123,25 @@ class KosControllers {
                 };
             }
             const newKos = await Kos.create({ name, price, stockKamar, latitude, longitude, address });
+            await KosanFacility.bulkCreate(
+                facility.map((item) => ({
+                    kosanId: newKos.id,
+                    facilityId: item.id
+                }))
+            );
+
+            const kosWithFacilities = await Kos.findByPk(newKos.id, {
+                include: [
+                    {
+                        model: Facility,    
+                        through: { attributes: [] } 
+                    }
+                ]
+            });
+
             res.status(201).json({
                 message: 'Kos added successfully',
-                data: newKos
+                data: kosWithFacilities
             });
         } catch (error) {
             next(error);
@@ -125,7 +150,19 @@ class KosControllers {
 
     static async getAllKos(req, res, next) {
         try {
-            const kos = await Kos.findAll();
+            // mengambil semua data kos, dan join dengan tabel Facility melalui table KosanFacility yang memiliki kosId sama dengan id kos
+            const kos = await Kos.findAll({
+                include: [
+                    {
+                        model: Facility,
+                        through: {
+                            attributes: []
+                        },
+                    }
+                ]
+            });
+
+            // const kos = await Kos.findAll()
             res.status(200).json({
                 message: 'success',
                 data: kos
@@ -138,7 +175,16 @@ class KosControllers {
     static async getKosById(req, res, next) {
         try {
             const { id } = req.params;
-            const kos = await Kos.findByPk(id);
+            const kos = await Kos.findByPk(id, {
+                include: [
+                    {
+                        model: Facility,
+                        through: {
+                            attributes: []
+                        },
+                    }
+                ]
+            });
             if (!kos) {
                 throw {
                     status: 404,

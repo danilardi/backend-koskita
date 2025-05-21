@@ -13,17 +13,13 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       Kos.belongsToMany(models.User, {
         through: models.Kamar,
-        foreignKey: 'kosId',
+        foreignKey: 'kosanId',
         otherKey: 'userId'
       });
       Kos.belongsToMany(models.Facility, {
         through: models.KosanFacility,
-        foreignKey: 'kosId',
-        otherKey: 'facilityId'
-      });
-      Kos.hasMany(models.ImageKosan, {
-        foreignKey: 'kosId',
-        as: 'images'
+        foreignKey: 'kosanId',
+        otherKey: 'facilityId',
       });
     }
   }

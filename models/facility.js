@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       Facility.belongsToMany(models.Kos, {
         through: models.KosanFacility,
         foreignKey: 'facilityId',
-        otherKey: 'kosId'
+        otherKey: 'kosanId'
       });
     }
   }
