@@ -80,6 +80,48 @@ class UserControllers {
      *                 value:
      *                   message: User with that email already exists
      */
+    static async userRegister(req, res, next) {
+        try {
+            const { name, email, password, role, phonenumber } = req.body || {};
+            if (!name || !email || !password || !role || !phonenumber) {
+                throw {
+                    status: 400,
+                    message: 'All fields are required'
+                };
+            }
+
+            if (role !== 'user' && role !== 'admin') {
+                throw {
+                    status: 400,
+                    message: "Role must be either 'user' or 'admin'"
+                };
+            }
+
+            const existingUser = await User.findOne({ where: { email } });
+            if (existingUser) {
+                throw {
+                    status: 400,
+                    message: 'User with that email already exists'
+                };
+            }
+
+            const saltRounds = parseInt(process.env.SALT_ROUNDS);
+            const salt = bcrypt.genSaltSync(saltRounds)
+            const hash = bcrypt.hashSync(password, salt)
+
+            const user = await User.create({
+                name,
+                email,
+                password: hash,
+                role,
+                phonenumber
+            });
+
+            res.status(201).json({ message: "User created successfully" });
+        } catch (error) {
+            next(error);
+        }
+    }
 
     /**
      * @swagger
@@ -139,78 +181,6 @@ class UserControllers {
      *             example:
      *               message: Invalid email or password
      */
-
-    /**
-     * @swagger
-     * /api/user/profile:
-     *   get:
-     *     summary: Get user profile
-     *     tags: [User]
-     *     security:
-     *       - bearerAuth: []
-     *     responses:
-     *       200:
-     *         description: User profile retrieved successfully
-     *         content:
-     *           application/json:
-     *             example:
-     *               message: User profile retrieved successfully
-     *               data:
-     *                 name: user
-     *                 email: user@gmail.com
-     *                 role: user
-     *                 phonenumber: "08123456789"
-     *       401:
-     *         description: Unauthorized
-     *         content:
-     *           application/json:
-     *             example:
-     *               message: access denied
-     */
-
-    static async userRegister(req, res, next) {
-        try {
-            const { name, email, password, role, phonenumber } = req.body || {};
-            if (!name || !email || !password || !role || !phonenumber) {
-                throw {
-                    status: 400,
-                    message: 'All fields are required'
-                };
-            }
-
-            if (role !== 'user' && role !== 'admin') {
-                throw {
-                    status: 400,
-                    message: "Role must be either 'user' or 'admin'"
-                };
-            }
-
-            const existingUser = await User.findOne({ where: { email } });
-            if (existingUser) {
-                throw {
-                    status: 400,
-                    message: 'User with that email already exists'
-                };
-            }
-
-            const saltRounds = parseInt(process.env.SALT_ROUNDS);
-            const salt = bcrypt.genSaltSync(saltRounds)
-            const hash = bcrypt.hashSync(password, salt)
-
-            const user = await User.create({
-                name,
-                email,
-                password: hash,
-                role,
-                phonenumber
-            });
-
-            res.status(201).json({ message: "User created successfully" });
-        } catch (error) {
-            next(error);
-        }
-    }
-
     static async userLogin(req, res, next) {
         try {
             const { email, password } = req.body || {};
@@ -254,6 +224,33 @@ class UserControllers {
         }
     }
 
+    /**
+     * @swagger
+     * /api/user/profile:
+     *   get:
+     *     summary: Get user profile
+     *     tags: [User]
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       200:
+     *         description: User profile retrieved successfully
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: User profile retrieved successfully
+     *               data:
+     *                 name: user
+     *                 email: user@gmail.com
+     *                 role: user
+     *                 phonenumber: "08123456789"
+     *       401:
+     *         description: Unauthorized
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: access denied
+     */
     static async getProfile(req, res, next) {
         try {
             const userId = req.user.id;

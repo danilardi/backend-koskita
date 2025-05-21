@@ -2,41 +2,19 @@ const { Kos, ImageKosan, KosanFacility, Facility } = require('../models');
 const kosanfacility = require('../models/kosanfacility');
 
 class KosControllers {
-
     /**
      * @swagger
-     * components:
-     *   schemas:
-     *     Kos:
-     *       type: object
-     *       properties:
-     *         id:
-     *           type: integer
-     *         name:
-     *           type: string
-     *         price:
-     *           type: integer
-     *         stockKamar:
-     *           type: integer
-     *         latitude:
-     *           type: number
-     *         longitude:
-     *           type: number
-     *         address:
-     *           type: string
-     *         createdAt:
-     *           type: string
-     *         updatedAt:
-     *           type: string
+     * tags:
+     *   - name: Kos
+     *     description: Manajemen kos dan fasilitas terkait
      */
 
     /**
      * @swagger
      * /api/kos:
      *   post:
-     *     summary: Add a new Kos
-     *     tags:
-     *       - Kos
+     *     summary: Tambah kos baru
+     *     tags: [Kos]
      *     requestBody:
      *       required: true
      *       content:
@@ -54,50 +32,61 @@ class KosControllers {
      *               name:
      *                 type: string
      *               price:
-     *                 type: integer
+     *                 type: number
      *               stockKamar:
      *                 type: integer
      *               latitude:
-     *                 type: number
+     *                 type: string
      *               longitude:
-     *                 type: number
+     *                 type: string
      *               address:
      *                 type: string
+     *               facility:
+     *                 type: array
+     *                 items:
+     *                   type: object
+     *                   properties:
+     *                     id:
+     *                       type: integer
+     *           example:
+     *             name: Kos Mawar
+     *             price: 700000
+     *             stockKamar: 5
+     *             latitude: "-6.200000"
+     *             longitude: "106.816666"
+     *             address: Jl. Melati No. 10
+     *             facility:
+     *               - id: 1
+     *               - id: 2
      *     responses:
      *       201:
-     *         description: Kos added successfully
+     *         description: Kos berhasil ditambahkan
      *         content:
      *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *                 data:
-     *                   $ref: '#/components/schemas/Kos'
+     *             example:
+     *               message: Kos added successfully
+     *               data:
+     *                 id: 1
+     *                 name: Kos Mawar
+     *                 price: 700000
+     *                 stockKamar: 5
+     *                 latitude: "-6.200000"
+     *                 longitude: "106.816666"
+     *                 address: Jl. Melati No. 10
+     *                 createdAt: "2025-05-21T12:00:00.000Z"
+     *                 updatedAt: "2025-05-21T12:00:00.000Z"
+     *                 Facilities:
+     *                   - id: 1
+     *                     name: WiFi
+     *                   - id: 2
+     *                     name: AC
      *       400:
-     *         description: All fields are required
-     *
-     *   get:
-     *     summary: Get all Kos
-     *     tags:
-     *       - Kos
-     *     responses:
-     *       200:
-     *         description: List of all Kos
+     *         description: Permintaan tidak valid (field kosong atau bukan array)
      *         content:
      *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *                 data:
-     *                   type: array
-     *                   items:
-     *                     $ref: '#/components/schemas/Kos'
+     *             example:
+     *               message: Facility must be an array
      */
-
     static async addKos(req, res, next) {
         try {
             const { name, price, stockKamar, latitude, longitude, address, images, facility } = req.body || {};
@@ -133,8 +122,8 @@ class KosControllers {
             const kosWithFacilities = await Kos.findByPk(newKos.id, {
                 include: [
                     {
-                        model: Facility,    
-                        through: { attributes: [] } 
+                        model: Facility,
+                        through: { attributes: [] }
                     }
                 ]
             });
@@ -148,6 +137,33 @@ class KosControllers {
         }
     }
 
+    /**
+     * @swagger
+     * /api/kos:
+     *   get:
+     *     summary: Ambil semua data kos
+     *     tags: [Kos]
+     *     responses:
+     *       200:
+     *         description: Berhasil mengambil daftar kos
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: success
+     *               data:
+     *                 - id: 1
+     *                   name: Kos Mawar
+     *                   price: 700000
+     *                   stockKamar: 5
+     *                   latitude: "-6.200000"
+     *                   longitude: "106.816666"
+     *                   address: Jl. Melati No. 10
+     *                   Facilities:
+     *                     - id: 1
+     *                       name: WiFi
+     *                     - id: 2
+     *                       name: AC
+     */
     static async getAllKos(req, res, next) {
         try {
             // mengambil semua data kos, dan join dengan tabel Facility melalui table KosanFacility yang memiliki kosId sama dengan id kos
@@ -155,8 +171,9 @@ class KosControllers {
                 include: [
                     {
                         model: Facility,
+                        attributes: ['id', 'name'],
                         through: {
-                            attributes: []
+                            attributes: [],
                         },
                     }
                 ]
@@ -172,6 +189,46 @@ class KosControllers {
         }
     }
 
+    /**
+     * @swagger
+     * /api/kos/{id}:
+     *   get:
+     *     summary: Ambil detail kos berdasarkan ID
+     *     tags: [Kos]
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         required: true
+     *         description: ID kos
+     *         schema:
+     *           type: integer
+     *     responses:
+     *       200:
+     *         description: Data kos ditemukan
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: success
+     *               data:
+     *                 id: 1
+     *                 name: Kos Mawar
+     *                 price: 700000
+     *                 stockKamar: 5
+     *                 latitude: "-6.200000"
+     *                 longitude: "106.816666"
+     *                 address: Jl. Melati No. 10
+     *                 Facilities:
+     *                   - id: 1
+     *                     name: WiFi
+     *                   - id: 2
+     *                     name: AC
+     *       404:
+     *         description: Kos tidak ditemukan
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Kos not found
+     */
     static async getKosById(req, res, next) {
         try {
             const { id } = req.params;
@@ -179,6 +236,7 @@ class KosControllers {
                 include: [
                     {
                         model: Facility,
+                        attributes: ['id', 'name'],
                         through: {
                             attributes: []
                         },
