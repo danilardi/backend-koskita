@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       });
       Kos.belongsToMany(models.Facility, {
         through: models.KosanFacility,
+        as: 'facilities',
         foreignKey: 'kosanId',
         otherKey: 'facilityId',
       });

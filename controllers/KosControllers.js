@@ -123,6 +123,7 @@ class KosControllers {
                 include: [
                     {
                         model: Facility,
+                        as: 'facilities',
                         through: { attributes: [] }
                     }
                 ]
@@ -171,6 +172,7 @@ class KosControllers {
                 include: [
                     {
                         model: Facility,
+                        as: 'facilities',
                         attributes: ['id', 'name'],
                         through: {
                             attributes: [],
@@ -236,6 +238,7 @@ class KosControllers {
                 include: [
                     {
                         model: Facility,
+                        as: 'facilities',
                         attributes: ['id', 'name'],
                         through: {
                             attributes: []
