@@ -3,6 +3,171 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 
 class UserControllers {
+    /**
+     * @swagger
+     * tags:
+     *   - name: User
+     *     description: User management endpoints
+     */
+
+    /**
+     * @swagger
+     * /api/user/register:
+     *   post:
+     *     summary: Register user baru
+     *     tags: [User]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - name
+     *               - email
+     *               - password
+     *               - role
+     *               - phonenumber
+     *             properties:
+     *               name:
+     *                 type: string
+     *               email:
+     *                 type: string
+     *               password:
+     *                 type: string
+     *               role:
+     *                 type: string
+     *               phonenumber:
+     *                 type: string
+     *           example:
+     *             name: user
+     *             email: user@gmail.com
+     *             password: user123
+     *             role: user
+     *             phonenumber: "08123456789"
+     *     responses:
+     *       201:
+     *         description: User created successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *             example:
+     *               message: User created successfully
+     *       400:
+     *         description: Bad Request
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *             examples:
+     *               missingFields:
+     *                 summary: Missing required fields
+     *                 value:
+     *                   message: All fields are required
+     *               invalidRole:
+     *                 summary: Invalid role
+     *                 value:
+     *                   message: Role must be either 'user' or 'admin'
+     *               emailExists:
+     *                 summary: Email already registered
+     *                 value:
+     *                   message: User with that email already exists
+     */
+
+    /**
+     * @swagger
+     * /api/user/login:
+     *   post:
+     *     summary: Login user
+     *     tags: [User]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - email
+     *               - password
+     *             properties:
+     *               email:
+     *                 type: string
+     *               password:
+     *                 type: string
+     *           example:
+     *             email: user@gmail.com
+     *             password: user123
+     *     responses:
+     *       200:
+     *         description: Login successful
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                 data:
+     *                   type: object
+     *                   properties:
+     *                     accessToken:
+     *                       type: string
+     *                     role:
+     *                       type: string
+     *             example:
+     *               message: Login successful
+     *               data:
+     *                 accessToken: <token>
+     *                 role: user
+     *       400:
+     *         description: Missing fields
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Email and password are required
+     *       401:
+     *         description: Invalid credentials
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Invalid email or password
+     */
+
+    /**
+     * @swagger
+     * /api/user/profile:
+     *   get:
+     *     summary: Get user profile
+     *     tags: [User]
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       200:
+     *         description: User profile retrieved successfully
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: User profile retrieved successfully
+     *               data:
+     *                 name: user
+     *                 email: user@gmail.com
+     *                 role: user
+     *                 phonenumber: "08123456789"
+     *       401:
+     *         description: Unauthorized
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: access denied
+     */
+
     static async userRegister(req, res, next) {
         try {
             const { name, email, password, role, phonenumber } = req.body || {};
@@ -79,8 +244,37 @@ class UserControllers {
 
             res.status(200).json({
                 message: "Login successful",
-                accessToken: token,
+                data: {
+                    accessToken: token,
+                    role: user.role,
+                }
             });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async getProfile(req, res, next) {
+        try {
+            const userId = req.user.id;
+            const user = await User.findByPk(userId);
+            if (!user) {
+                throw {
+                    status: 404,
+                    message: 'User not found'
+                };
+            }
+            res.status(200).json(
+                {
+                    message: 'User profile retrieved successfully',
+                    data: {
+                        name: user.name,
+                        email: user.email,
+                        role: user.role,
+                        phonenumber: user.phonenumber
+                    }
+                }
+            );
         } catch (error) {
             next(error);
         }
