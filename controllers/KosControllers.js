@@ -134,6 +134,25 @@ class KosControllers {
             next(error);
         }
     }
+
+    static async getKosById(req, res, next) {
+        try {
+            const { id } = req.params;
+            const kos = await Kos.findByPk(id);
+            if (!kos) {
+                throw {
+                    status: 404,
+                    message: 'Kos not found'
+                };
+            }
+            res.status(200).json({
+                message: 'successs',
+                data: kos
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 module.exports = KosControllers;

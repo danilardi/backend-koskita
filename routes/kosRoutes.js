@@ -5,5 +5,6 @@ const authorization = require('../middlewares/authorization');
 
 route.post('/', authentication, authorization, KosControllers.addKos);
 route.get('/', KosControllers.getAllKos);
+route.get('/:id', KosControllers.getKosById);
 
 module.exports = route;
