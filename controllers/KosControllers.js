@@ -51,10 +51,25 @@ class KosControllers {
                 ]
             });
 
-            // const kos = await Kos.findAll()
+             // tambahkan logik sisa kamar
+            const kosWithAvailableRooms = await Promise.all(
+                kos.map(async (item) => {
+                    const availableRooms = await Kamar.count({
+                        where: {
+                            kosanId: item.id,
+                            status: 'available'
+                        }
+                    });
+                    return {
+                        ...item.toJSON(),
+                        availableRooms
+                    };
+                })
+            );
+            
             res.status(200).json({
                 message: 'success',
-                data: kos
+                data: kosWithAvailableRooms
             });
         } catch (error) {
             next(error);
@@ -122,9 +137,22 @@ class KosControllers {
                     message: 'Kos not found'
                 };
             }
+
+            // tambahkan logik sisa kamar
+            const availableRooms = await Kamar.count({
+                where: {
+                    kosanId: id,
+                    status: 'available'
+                }
+            });
+            const kosWithAvailableRooms = {
+                ...kos.toJSON(),
+                availableRooms
+            };
+
             res.status(200).json({
                 message: 'successs',
-                data: kos
+                data: kosWithAvailableRooms
             });
         } catch (error) {
             next(error);

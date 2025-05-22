@@ -28,7 +28,7 @@ const swaggerOptions = {
                 url: 'https://t04pzf6r-3000.asse.devtunnels.ms', // sesuai base URL server
             },
             {
-                url: 'http://localhost:3000', // sesuai base URL server
+                url: 'http://localhost:3001', // sesuai base URL server
             },
         ],
     },
