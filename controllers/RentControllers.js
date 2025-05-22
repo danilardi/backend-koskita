@@ -123,7 +123,7 @@ class RentControllers {
      * @swagger
      * /api/rents:
      *   get:
-     *     summary: Ambil semua data kamar yang telah disewa (Admin only)
+     *     summary: Ambil semua data kamar (Admin only)
      *     tags: [Rents]
      *     security:
      *       - bearerAuth: []
