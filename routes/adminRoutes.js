@@ -19,6 +19,6 @@ route.get('/kos/:id', KosControllers.getKosById);
 
 route.get('/rent', RentControllers.getAllRent);
 route.get('/rent/:id', RentControllers.getRentById);
-route.put('/rent/:id', RentControllers.updateRent);
+route.put('/rent/:id', RentControllers.stopRent);
 
 module.exports = route;

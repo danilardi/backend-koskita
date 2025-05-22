@@ -162,7 +162,7 @@ class RentControllers {
      * @swagger
      * /api/admin/rent/{id}:
      *   put:
-     *     summary: Update status penyewaan kamar berdasarkan ID
+     *     summary: Hentikan penyewaan kamar berdasarkan ID
      *     tags: [Admin - Rents]
      *     security:
      *       - bearerAuth: []
@@ -170,21 +170,9 @@ class RentControllers {
      *       - name: id
      *         in: path
      *         required: true
-     *         description: ID kamar yang ingin diupdate
+     *         description: ID kamar yang ingin dihentikan penyewaannya
      *         schema:
      *           type: integer
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               status:
-     *                 type: string
-     *                 enum: [available, booked]
-     *           example:
-     *             status: available
      *     responses:
      *       200:
      *         description: Status penyewaan kamar berhasil diupdate
@@ -204,10 +192,9 @@ class RentControllers {
      *             example:
      *               message: Rent not found
      */
-    static async updateRent(req, res, next) {
+    static async stopRent(req, res, next) {
         try {
             const { id } = req.params;
-            const { status } = req.body;
 
             const rent = await Kamar.findByPk(id);
 
@@ -215,14 +202,10 @@ class RentControllers {
                 throw { status: 404, message: 'Rent not found' };
             }
 
-            if (status === 'available') {
-                await rent.update({ userId: null, status });
-            } else {
-                await rent.update({ status });
-            }
-
+            await rent.update({ userId: null, status: 'available', startDate: null, endDate: null });
+            
             res.status(200).json({
-                message: 'Rent updated successfully',
+                message: 'Rent stop successfully',
                 data: rent
             });
         } catch (error) {
