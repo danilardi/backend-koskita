@@ -202,7 +202,7 @@ class RentControllers {
                 throw { status: 404, message: 'Rent not found' };
             }
 
-            await rent.update({ userId: null, status: 'available', startDate: null, endDate: null });
+            await rent.update({ userId: null, status: 'available', startDate: null, endDate: null, duration: null });
             
             res.status(200).json({
                 message: 'Rent stop successfully',
