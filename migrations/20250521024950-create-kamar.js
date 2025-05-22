@@ -9,6 +9,10 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      noKamar: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
       kosanId: {
         type: Sequelize.INTEGER,
         references: {
@@ -25,7 +29,13 @@ module.exports = {
           key: 'id'
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+        onDelete: 'SET NULL',
+        allowNull: true
+      },
+      status: {
+        type: Sequelize.ENUM('available', 'booked'),
+        defaultValue: 'available',
+        allowNull: false
       },
       createdAt: {
         allowNull: false,

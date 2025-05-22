@@ -11,18 +11,18 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      User.belongsToMany(models.Kos, {
-        through: models.Kamar,
-        foreignKey: 'userId',
-        otherKey: 'kosanId'
-      })
+      User.hasMany(models.Kamar, { foreignKey: 'userId' });
     }
   }
   User.init({
     name: DataTypes.STRING,
     email: DataTypes.STRING,
     password: DataTypes.STRING,
-    role: DataTypes.STRING,
+    role: {
+      type: DataTypes.ENUM,
+      values: ['user', 'admin'],
+      defaultValue: 'user',
+    },
     phonenumber: DataTypes.STRING
   }, {
     sequelize,

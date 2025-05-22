@@ -11,10 +11,9 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Kos.belongsToMany(models.User, {
-        through: models.Kamar,
+      Kos.hasMany(models.Kamar, {
         foreignKey: 'kosanId',
-        otherKey: 'userId'
+        as: 'kamar'
       });
       Kos.belongsToMany(models.Facility, {
         through: models.KosanFacility,

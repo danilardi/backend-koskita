@@ -12,16 +12,24 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Kamar.belongsTo(models.User, {
-        foreignKey: 'userId'
+        foreignKey: 'userId',
+        as: 'user'
       });
       Kamar.belongsTo(models.Kos, {
-        foreignKey: 'kosanId'
+        foreignKey: 'kosanId',
+        as: 'kosan'
       });
     }
   }
   Kamar.init({
+    noKamar: DataTypes.STRING,
     kosanId: DataTypes.INTEGER,
-    userId: DataTypes.INTEGER
+    userId: DataTypes.INTEGER,
+    status: {
+      type: DataTypes.ENUM,
+      values: ['available', 'booked'],
+      defaultValue: 'available',
+    },
   }, {
     sequelize,
     modelName: 'Kamar',
