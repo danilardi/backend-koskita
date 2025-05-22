@@ -4,7 +4,13 @@ const { Kos, Kamar, User } = require('../models');
 class RentControllers {
     /**
      * @swagger
-     * /api/rents:
+     * tags:
+     *   - name: Rents
+     *     description: Manajemen penyewaan kamar
+     */
+    /**
+     * @swagger
+     * /api/rent:
      *   post:
      *     summary: Book a kamar (sewa kamar)
      *     tags: [Rents]
@@ -71,7 +77,10 @@ class RentControllers {
      */
     static async rentKamar(req, res, next) {
         try {
-            const { kosanId } = req.body;
+            const { kosanId, duration, startDate } = req.body;
+            if (!kosanId || !duration || !startDate) {
+                throw { status: 400, message: 'kosanId, duration, and startDate are required' };
+            }
             const userId = req.user.id;
 
             const kos = await Kos.findByPk(kosanId);
@@ -89,13 +98,24 @@ class RentControllers {
             }
             const kamarId = availableKamar.id;
 
+            const endDate = new Date(startDate);
+            endDate.setMonth(endDate.getMonth() + duration);
+
+            const data = {
+                userId,
+                status: 'booked',
+                duration,
+                startDate,
+                endDate
+            }
+
             await Kamar.update(
-                { status: 'booked', userId },
+                { ...data },
                 { where: { id: kamarId } }
             );
 
             const updatedKamar = await Kamar.findByPk(kamarId, {
-                attributes: ['id', 'noKamar', 'status', 'createdAt', 'updatedAt'],
+                attributes: ['id', 'noKamar', 'status', 'duration', 'startDate', 'endDate', 'createdAt', 'updatedAt'],
                 include: [
                     {
                         model: Kos,
@@ -121,72 +141,7 @@ class RentControllers {
 
     /**
      * @swagger
-     * /api/rents:
-     *   get:
-     *     summary: Ambil semua data kamar (Admin only)
-     *     tags: [Rents]
-     *     security:
-     *       - bearerAuth: []
-     *     responses:
-     *       200:
-     *         description: Daftar kamar yang disewa berhasil diambil
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *                 data:
-     *                   type: array
-     *                   items:
-     *                     type: object
-     *             example:
-     *               message: success
-     *               data:
-     *                 - id: 1
-     *                   noKamar: "A1"
-     *                   status: "booked"
-     *                   createdAt: "2025-05-21T08:00:00.000Z"
-     *                   updatedAt: "2025-05-21T08:30:00.000Z"
-     *                   kosan:
-     *                     name: Kos A
-     *                     price: 1000000
-     *                     address: Jl. Mangga No. 5
-     *                   user:
-     *                     id: 1
-     *                     name: John Doe
-     *                     email: john@example.com
-     *                     phonenumber: "08123456789"
-     */
-    static async getAllRent(req, res, next) {
-        try {
-            const rent = await Kamar.findAll({
-                attributes: ['id', 'noKamar', 'status', 'createdAt', 'updatedAt'],
-                include: [
-                    {
-                        model: Kos,
-                        as: 'kosan',
-                    },
-                    {
-                        model: User,
-                        as: 'user',
-                        attributes: ['id', 'name', 'email', 'phonenumber']
-                    }
-                ]
-            });
-            res.status(200).json({
-                message: 'success',
-                data: rent
-            });
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    /**
-     * @swagger
-     * /api/rents/self:
+     * /api/rent/self:
      *   get:
      *     summary: Ambil kamar yang disewa oleh user saat ini
      *     tags: [Rents]
@@ -252,7 +207,7 @@ class RentControllers {
 
     /**
      * @swagger
-     * /api/rents/{id}:
+     * /api/rent/{id}:
      *   get:
      *     summary: Ambil detail penyewaan kamar berdasarkan ID
      *     tags: [Rents]

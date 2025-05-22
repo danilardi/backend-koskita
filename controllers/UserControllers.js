@@ -70,7 +70,7 @@ class UserControllers {
      *               missingFields:
      *                 summary: Missing required fields
      *                 value:
-     *                   message: All fields are required
+     *                   message: name, email, password, role, and phonenumber are required
      *               invalidRole:
      *                 summary: Invalid role
      *                 value:
@@ -86,7 +86,7 @@ class UserControllers {
             if (!name || !email || !password || !role || !phonenumber) {
                 throw {
                     status: 400,
-                    message: 'All fields are required'
+                    message: 'name, email, password, role, and phonenumber are required'
                 };
             }
 
@@ -272,6 +272,104 @@ class UserControllers {
                     }
                 }
             );
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
+     * @swagger
+     * /api/user/profile:
+     *   patch:
+     *     summary: Update profil pengguna (nama, password, nomor HP)
+     *     tags: [User]
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - name
+     *               - password
+     *               - phonenumber
+     *             properties:
+     *               name:
+     *                 type: string
+     *               password:
+     *                 type: string
+     *               phonenumber:
+     *                 type: string
+     *           example:
+     *             name: John Doe Updated
+     *             password: newsecurepass123
+     *             phonenumber: "081212345678"
+     *     responses:
+     *       200:
+     *         description: Profil berhasil diperbarui
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *             example:
+     *               message: Profile updated successfully
+     *       400:
+     *         description: Field tidak lengkap
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *             example:
+     *               message: name, password, and phonenumber are required
+     *       404:
+     *         description: User tidak ditemukan
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *             example:
+     *               message: User not found
+     */
+    static async updateProfile(req, res, next) {
+        try {
+            const userId = req.user.id;
+            const { name, password, phonenumber } = req.body || {};
+            if (!name || !password || !phonenumber) {
+                throw {
+                    status: 400,
+                    message: 'name, password, and phonenumber are required'
+                };
+            }
+
+            const user = await User.findByPk(userId);
+            if (!user) {
+                throw {
+                    status: 404,
+                    message: 'User not found'
+                };
+            }
+
+            const saltRounds = parseInt(process.env.SALT_ROUNDS);
+            const salt = bcrypt.genSaltSync(saltRounds)
+            const hash = bcrypt.hashSync(password, salt)
+
+            await User.update(
+                { name, password: hash, phonenumber },
+                { where: { id: userId } }
+            );
+
+            res.status(200).json({ message: 'Profile updated successfully' });
         } catch (error) {
             next(error);
         }

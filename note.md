@@ -5,5 +5,7 @@ sequelize model:generate --name ImageKosan --attributes name:string,kosanId:inte
 sequelize model:generate --name Kamar --attributes kosanId:integer,userId:integer
 sequelize model:generate --name KosanFacility --attributes kosanId:integer,facilityId:integer
 
+sequelize migration:generate --name add-column-tanggalSewa-to-
+
 
 

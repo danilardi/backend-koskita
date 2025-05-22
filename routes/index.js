@@ -1,8 +1,10 @@
 const route = require('express').Router();
+const authentication = require('../middlewares/authentication');
+const authorization = require('../middlewares/authorization');
 const userRoutes = require('./userRoutes');
 const kosRoutes = require('./kosRoutes');
-const facilitiesRoutes = require('./facilityRoutes');
 const rentRoutes = require('./rentRoutes');
+const adminRoutes = require('./adminRoutes');
 
 route.get('/', (req, res) => {
     res.status(200).json({
@@ -12,7 +14,7 @@ route.get('/', (req, res) => {
 
 route.use('/user', userRoutes);
 route.use('/kos', kosRoutes);
-route.use('/facility', facilitiesRoutes);
 route.use('/rent', rentRoutes);
+route.use('/admin', authentication, authorization, adminRoutes);
 
 module.exports = route;
