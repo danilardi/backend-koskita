@@ -188,9 +188,24 @@ class KosControllers {
                     }
                 ]
             });
+            // tambahkan logik sisa kamar
+            const kosWithAvailableRooms = await Promise.all(
+                kos.map(async (item) => {
+                    const availableRooms = await Kamar.count({
+                        where: {
+                            kosanId: item.id,
+                            status: 'available'
+                        }
+                    });
+                    return {
+                        ...item.toJSON(),
+                        availableRooms
+                    };
+                })
+            );
             res.status(200).json({
                 message: 'success',
-                data: kos
+                data: kosWithAvailableRooms
             });
         } catch (error) {
             next(error);
