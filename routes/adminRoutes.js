@@ -15,7 +15,8 @@ route.delete('/facility/:id', FacilityControllers.deleteFacility);
 route.post('/kos', KosControllers.addKos);
 route.get('/kos', KosControllers.getAllKos);
 route.get('/kos/:id', KosControllers.getKosById);
-
+route.put('/kos/:id', KosControllers.updateKos);
+route.delete('/kos/:id', KosControllers.deleteKos);
 
 route.get('/rent', RentControllers.getAllRent);
 route.get('/rent/:id', RentControllers.getRentById);
