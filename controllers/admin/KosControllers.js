@@ -88,7 +88,7 @@ class KosControllers {
      */
     static async addKos(req, res, next) {
         try {
-            const { name, price, stockKamar, latitude, longitude, address, images, facility } = req.body || {};
+            const { name, price, stockKamar, latitude, longitude, address, facility } = req.body || {};
             if (!name || !price || !stockKamar || !latitude || !longitude || !address) {
                 throw {
                     status: 400,
@@ -288,7 +288,7 @@ class KosControllers {
         }
     }
 
-    /**
+        /**
      * @swagger
      * /api/admin/kos/{id}:
      *   put:
@@ -301,35 +301,102 @@ class KosControllers {
      *         description: ID kos yang akan diupdate
      *         schema:
      *           type: integer
-     *       - name: body
-     *         in: body
-     *         required: true
-     *         description: Data kos yang akan diupdate
-     *         schema:
-     *           type: object
-     *           properties:
-     *             name:
-     *               type: string
-     *             price:
-     *               type: number
-     *             stockKamar:
-     *               type: integer
-     *             latitude:
-     *               type: string
-     *             longitude:
-     *               type: string
-     *             address:
-     *               type: string
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - name
+     *               - price
+     *               - stockKamar
+     *               - latitude
+     *               - longitude
+     *               - address
+     *             properties:
+     *               name:
+     *                 type: string
+     *               price:
+     *                 type: number
+     *               stockKamar:
+     *                 type: integer
+     *               latitude:
+     *                 type: string
+     *               longitude:
+     *                 type: string
+     *               address:
+     *                 type: string
+     *               facility:
+     *                 type: array
+     *                 items:
+     *                   type: object
+     *                   properties:
+     *                     id:
+     *                       type: integer
+     *           example:
+     *             name: Kos Mawar
+     *             price: 700000
+     *             stockKamar: 5
+     *             latitude: "-6.200000"
+     *             longitude: "106.816666"
+     *             address: Jl. Melati No. 10
+     *             facility:
+     *               - id: 1
+     *               - id: 2
+     *     responses:
+     *       200:
+     *         description: Kos berhasil diupdate
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Kos updated successfully
+     *               data:
+     *                 id: 1
+     *                 name: Kos Mawar
+     *                 price: 700000
+     *                 stockKamar: 5
+     *                 latitude: "-6.200000"
+     *                 longitude: "106.816666"
+     *                 address: Jl. Melati No. 10
+     *                 updatedAt: "2025-05-22T12:00:00.000Z"
+     *       400:
+     *         description: Permintaan tidak valid
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: name, price, stockKamar, latitude, longitude, and address are required
+     *       404:
+     *         description: Kos tidak ditemukan
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Kos not found
      */
     static async updateKos(req, res, next) {
         try {
             const { id } = req.params;
-            const { name, price, stockKamar, latitude, longitude, address } = req.body || {};
+            const { name, price, stockKamar, latitude, longitude, address, facility } = req.body || {};
 
             if (!name || !price || !stockKamar || !latitude || !longitude || !address) {
                 throw {
                     status: 400,
                     message: 'name, price, stockKamar, latitude, longitude, and address are required'
+                };
+            }
+
+            if (facility && !Array.isArray(facility)) {
+                throw {
+                    status: 400,
+                    message: 'Facility must be an array'
+                };
+            }
+
+            const existingKos = await Kos.findOne({ where: { name, id: { [Op.ne]: id } } });
+            if (existingKos) {
+                throw {
+                    status: 400,
+                    message: 'Kos with this name already exists'
                 };
             }
 
@@ -345,6 +412,16 @@ class KosControllers {
             kos.longitude = longitude;
             kos.address = address;
 
+            if (facility) {
+                await KosanFacility.destroy({ where: { kosanId: id } });
+                await KosanFacility.bulkCreate(
+                    facility.map((item) => ({
+                        kosanId: id,
+                        facilityId: item.id
+                    }))
+                );
+            }
+            
             await kos.save();
 
             res.status(200).json({
