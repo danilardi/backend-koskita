@@ -29,6 +29,8 @@ class RentControllers {
      *                 type: integer
      *           example:
      *             kosanId: 1
+     *             duration: 2
+     *             startDate: "2025-05-21T09:00:00.000Z"
      *     responses:
      *       200:
      *         description: Kamar berhasil dibooking
