@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon index.js",
     "test": "jest --coverage",
-    "preview": "node index.js"
+    "prev": "node index.js"
   },
   "author": "",
   "license": "ISC",
