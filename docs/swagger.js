@@ -32,7 +32,7 @@ const swaggerOptions = {
             },
         ],
     },
-    apis: ['./routes/*.js', './controllers/*.js'], // lokasi file dengan anotasi Swagger (pakai JSDoc-style)
+    apis: ['./routes/*.js', './controllers/*.js', './controllers/**/*.js'], // lokasi file dengan anotasi Swagger (pakai JSDoc-style)
 };
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);

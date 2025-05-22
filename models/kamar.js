@@ -25,6 +25,9 @@ module.exports = (sequelize, DataTypes) => {
     noKamar: DataTypes.STRING,
     kosanId: DataTypes.INTEGER,
     userId: DataTypes.INTEGER,
+    duration: DataTypes.INTEGER,
+    startDate: DataTypes.DATE,
+    endDate: DataTypes.DATE,
     status: {
       type: DataTypes.ENUM,
       values: ['available', 'booked'],
