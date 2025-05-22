@@ -1,5 +1,4 @@
-const { Kos, ImageKosan, KosanFacility, Facility } = require('../models');
-const kosanfacility = require('../models/kosanfacility');
+const { Kos, Kamar, KosanFacility, Facility } = require('../models');
 
 class KosControllers {
     /**
@@ -118,20 +117,31 @@ class KosControllers {
                     facilityId: item.id
                 }))
             );
-
-            const kosWithFacilities = await Kos.findByPk(newKos.id, {
+            await Kamar.bulkCreate(
+                Array.from({ length: stockKamar }, (_, index) => ({
+                    noKamar: `K${index + 1}`,
+                    kosanId: newKos.id
+                }))
+            );
+            
+            const kos = await Kos.findByPk(newKos.id, {
                 include: [
                     {
                         model: Facility,
                         as: 'facilities',
                         through: { attributes: [] }
+                    },
+                    {
+                        model: Kamar,
+                        as: 'kamar',
+                        attributes: ['id', 'noKamar', 'status'],
                     }
                 ]
             });
 
             res.status(201).json({
                 message: 'Kos added successfully',
-                data: kosWithFacilities
+                data: kos
             });
         } catch (error) {
             next(error);
@@ -219,7 +229,7 @@ class KosControllers {
      *                 latitude: "-6.200000"
      *                 longitude: "106.816666"
      *                 address: Jl. Melati No. 10
-     *                 Facilities:
+     *                 facilities:
      *                   - id: 1
      *                     name: WiFi
      *                   - id: 2
